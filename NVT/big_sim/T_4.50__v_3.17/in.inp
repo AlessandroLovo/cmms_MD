@@ -1,0 +1,29 @@
+log NVT/big_sim/T_4.50__v_3.17/settings.log
+boundary p p p
+units lj
+atom_style atomic
+read_data NVT/big_sim/T_4.50__v_3.17/lattice.data
+
+mass 1 1.000000
+pair_style lj/cut 3.000000 
+pair_modify shift yes 
+pair_coeff 1 1 1.0 1.0
+
+velocity all create 4.500000 48117 mom yes rot yes 
+
+neighbor 0.300000 bin
+neigh_modify every 20 delay 0 check no
+
+timestep 0.004000
+
+fix 1 all nvt temp 4.500000 4.500000 0.800000
+
+dump dumpeq all dcd 1000 NVT/big_sim/T_4.50__v_3.17/trajectory.dcd
+
+thermo 100 
+thermo_style custom step temp press etotal pe 
+
+log NVT/big_sim/T_4.50__v_3.17/results.log
+run 200000
+
+write_restart NVT/big_sim/T_4.50__v_3.17/end1.restart

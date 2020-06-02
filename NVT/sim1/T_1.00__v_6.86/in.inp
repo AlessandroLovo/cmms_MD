@@ -1,0 +1,29 @@
+log NVT/sim1/T_1.00__v_6.86/settings.log
+boundary p p p
+units lj
+atom_style atomic
+read_data NVT/sim1/T_1.00__v_6.86/lattice.data
+
+mass 1 1.000000
+pair_style lj/cut 2.500000 
+pair_modify shift yes 
+pair_coeff 1 1 1.0 1.0
+
+velocity all create 1.000000 64913 mom yes rot yes 
+
+neighbor 0.300000 bin
+neigh_modify every 20 delay 0 check no
+
+timestep 0.004000
+
+fix 1 all nvt temp 1.000000 1.000000 2.000000
+
+dump dumpeq all dcd 1000 NVT/sim1/T_1.00__v_6.86/trajectory.dcd
+
+thermo 1000 
+thermo_style custom step temp press etotal 
+
+log NVT/sim1/T_1.00__v_6.86/results.log
+run 50000
+
+write_restart NVT/sim1/T_1.00__v_6.86/end1.restart

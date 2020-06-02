@@ -1,0 +1,42 @@
+
+boundary    p p p            # boundary condition along x, y, z [p=periodic]
+
+units			lj		     #  units
+atom_style		atomic		 #  style: atomic, molecular, ..
+
+read_data lattice_11_11_11__2_2_2.data			 # data of starting configuration
+  orthogonal box = (-11 -11 -11) to (11 11 11)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  1331 atoms
+  read_data CPU = 0.00435478 secs
+
+# force field definition
+mass            1 1.0            # atom typ and mass
+pair_style		lj/cut 2.5	 # LJ potential cut
+pair_modify             shift yes        # shifted potential
+pair_coeff		1 1 1.0 1.0 	 # for atom type .. and ..: epsilon, sigma
+
+# set starting velocity
+velocity		all create 1.5 87287  mom yes rot yes dist gaussian	#  temperature, seed for random number generator, tot linear momentum =0, tot angular momentum =0, gaussian distribution
+
+#  check of neighbor list
+neighbor	0.3 bin		# skin length and algorithm used [bin]
+neigh_modify	every 20 delay 0 check no  # build neighbor list every ... ts
+
+timestep        	0.004
+
+
+fix 1 all  nvt  temp 1.5 1.5 2         # NPT ensemble  T_i T_f tau_T   p_i p_f tau_p
+                                                    # Nose-Hoover thermo and barostat
+                                                    # tau should be ~500-1000 ts
+                                                    # iso means the box is rescaled isotropically
+
+dump dumpeq all dcd 1000 LJ.dcd                # save coordinates in *.dcd file every ... ts
+                                               # dcd is a compressed format (bynary file)
+
+thermo	1000                                   # thermodynamic output every ... ts
+thermo_style custom step temp press vol density pe ke etotal   # list of quantities in thermodynamic output
+
+
+log results.log

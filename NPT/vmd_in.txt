@@ -1,0 +1,3 @@
+topo readlammpsdata lattice_11_11_11__2_2_2.data -style atomic
+animate write psf lattice.psf
+exit

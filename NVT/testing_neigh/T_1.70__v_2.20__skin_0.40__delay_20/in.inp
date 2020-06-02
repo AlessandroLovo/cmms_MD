@@ -1,0 +1,29 @@
+log NVT/testing_neigh/T_1.70__v_2.20__skin_0.40__delay_20/settings.log
+boundary p p p
+units lj
+atom_style atomic
+read_data NVT/testing_neigh/T_1.70__v_2.20__skin_0.40__delay_20/lattice.data
+
+mass 1 1.000000
+pair_style lj/cut 3.000000 
+pair_modify shift yes 
+pair_coeff 1 1 1.0 1.0
+
+velocity all create 1.700000 60923 mom yes rot yes dist gaussian
+
+neighbor 0.400000 bin
+neigh_modify every 1 delay 20 check no
+
+timestep 0.004000
+
+fix 1 all nvt temp 1.700000 1.700000 0.800000
+
+dump dumpeq all dcd 1000 NVT/testing_neigh/T_1.70__v_2.20__skin_0.40__delay_20/trajectory.dcd
+
+thermo 100 
+thermo_style custom step temp press etotal pe 
+
+log NVT/testing_neigh/T_1.70__v_2.20__skin_0.40__delay_20/results.log
+run 200000
+
+write_restart NVT/testing_neigh/T_1.70__v_2.20__skin_0.40__delay_20/end1.restart

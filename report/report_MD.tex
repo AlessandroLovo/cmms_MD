@@ -1,0 +1,485 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage[english]{babel}
+%
+\usepackage{floatrow}
+\newfloatcommand{capbtabbox}{table}[][\FBwidth]
+% \usepackage[export]{adjustbox}
+
+\input{"/media/alessandro/OS/Users/ale57/Documents/1. universita'/ANNO IV (2019-2020)/second semester/header.tex"}
+
+\begin{document}
+
+\title{Estimation of Van der Waals parameters of a Lennard-Jones fluid via Molecular Dynamics Simulations}
+\author{Alessandro Lovo, mat. 1236048}
+
+\maketitle
+
+\section{Introduction}
+  The aim of this report is to use Molecular Dynamics (MD) simulations of a fluid subject to Lennard-Jones (LJ) potential to derive its equation of state. Then, by fitting it with the Van der Waals (VdW) equation of state an estimate of the VdW parameters will be obtained.
+
+  \subsection{Lennard-Jones and Van der Waals model}
+    A LJ fluid is a set of particle subject only to the pair-wise interaction potential in eq \ref{eq:lj} where $r$ is the distance between the centers of the two particles considered. The LJ parameters $\sigma$ and $\epsilon$, together with the mass of the particles $m$, provide typical scales of the system and are thus used to work in reduced units (here denoted with a *). For example if $t$ is the unit of time, the corresponding reduced unit would be $t^* = t \sqrt{\frac[f]{\epsilon}{m\sigma^2}}$.
+
+    \begin{equation} \label{eq:lj}
+      U(r) = 4\epsilon\left(\left(\frac{\sigma}{r} \right)^{12} - \left(\frac{\sigma}{r} \right)^6 \right)
+    \end{equation}
+
+    This potential models the short range attraction due to the interaction between temporary dipoles (London forces) and the hard Pauli repulsion between the electron clouds.\\
+    By some statistical mechanics mean field computations one finds that a fluid of $N$ particles in a volume $V$ at pressure $P$ and temperature $T$ interacting via the LJ potential follows the VdW equation of state (eq \ref{eq:vdw}) where $N_A$ is Avogadro's number and $k_B$ the Boltzmann constant. By defining the volume per particle $v = \frac[f]{V}{N}$ and going to reduced units one gets a nicer form of the equation of state.
+
+    \begin{gather} \label{eq:vdw}
+      \left(P + \frac{a}{N_A^2}\frac{N^2}{V^2} \right)\left(V - \frac{b}{N_A}N \right) = Nk_BT \quad \rightarrow \quad
+      \left(P^* + \frac{a^*}{v^{*2}} \right)(v^* - b^*) = T^*
+    \end{gather}
+
+    The VdW parameters $a$, $b$ are connected to the LJ parameters $\epsilon$, $\sigma$ through
+
+    \begin{equation} \label{eq:ab}
+      \begin{cases}
+        a = N_A^2\frac{8\pi\epsilon\sigma^3}{3}\\
+        b = N_A\frac{2\pi\sigma^3}{3}
+      \end{cases}
+      \quad \rightarrow \quad
+      \begin{cases}
+        a^* = \frac{1}{N_A^2\epsilon\sigma^3}a = \frac{8\pi}{3} \approx 8.38\\
+        b^* = \frac{1}{N_A\sigma^3}b = \frac{2\pi}{3} \approx 2.09
+      \end{cases}
+    \end{equation}
+
+    and the  VdW equation of state displays a phase transition with a critical point at
+    \begin{gather*}
+      T_c^* = \frac{8a^*}{27b^*}, \quad P_c^* = \frac{a^*}{27b^{*2}}, \quad v_c^* = 3b^*
+    \end{gather*}
+
+    but the model itself is not able to correclty describe the region where the liquid and vapour phases coexist (fig \ref{fig:models}). To describe that region one should use the Maxwell 'equal-area' rule to obtain a constant pressure for each isotherm in the coexistence zone \cite{rif:Maxwell}, and this complicates a lot the model. For the sake of this report of that region will be simply avoided.
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{lj.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{vdw_isotherms.pgf}}
+      \caption{Lennard-Jones potential and Van der Waals isotherms with coexistence zone}
+      \label{fig:models}
+    \end{figure}
+
+  \subsection{Some experimental data}
+    LJ and VdW models describe well systems where the only potential energy is given by London forces, i.e systems of small quasi-spherical non polar particles. Here are some of them (tabs \ref{tab:exp_par}, \ref{tab:exp_par*}):
+
+    \begin{table}
+      \centering
+      \begin{tabular}{c|ccc|ccccc}
+        \toprule
+        substance & $\frac[f]{\epsilon}{k_B} [\si{\kelvin}]$ & $\sigma [\si{\pico\meter}]$ & $m [a.u.]$ & $a [\si{\joule\meter^3\mol^{-2}} \times 10^{-5}]$ & $b [\si{\meter^3\mol^{-1}}]$ & $T_c [\si{\kelvin}]$ \\
+        \midrule
+        \ce{Ar} & 120 & 341 & 40 & 0.136 & 3.20 & 150.8 \\
+        \ce{N_2} & 95.2 & 370 & 28 & 0.137 & 3.87 & 126.2 \\
+        \ce{O_2} & 118 & 358 & 32 & 0.138 & 3.19 & 154.6 \\
+        \ce{CO_2} & 189 & 449 & 44 & 0.366 & 4.29 & 304.2 \\
+        \bottomrule
+      \end{tabular}
+      \caption{LJ and VdW experimental parameters in real units \cite{rif:exp_par1} \cite{rif:exp_par2}}
+      \label{tab:exp_par}
+    \end{table}
+
+    \begin{table}
+      \centering
+      \begin{tabular}{c|cccccccc}
+        \toprule
+        substance & $a^*$ & $b^*$ & $T_c^*$ \\
+        \midrule
+        \ce{Ar} & 5.69 & 1.34 & 1.26 \\
+        \ce{N_2} & 5.67 & 1.27 & 1.33 \\
+        \ce{O_2} & 5.10 & 1.15 & 1.31 \\
+        \ce{CO_2} & 4.27 & 0.79 & 1.61 \\
+        \bottomrule
+      \end{tabular}
+      \caption{VdW experimental parameters in reduced units}
+      \label{tab:exp_par*}
+    \end{table}
+
+    From this experimental parameters one can immediately see that the statistical mechanics predictions in eq \ref{eq:vdw} are not very accurate, and also, since the reduced parameters vary with the substance, there are other effects in the physical systems beyond the LJ - VdW approximation.
+    %\todo[inline]{Not very good sentence}
+
+    % Now that we have an idea of the scenario we are going to explore with MD simulations we can choose more wisely the simulation parameters.
+
+
+\section{Choice of simulation parameters}
+  All the following MD simulations are done using the programm LAMMPS \cite{rif:lammps} and the basic idea is to use it to obtain various triplets $(v^*,P^*,T^*)$ out of the coexistence zone and then fit them with the VdW formula (eq \ref{eq:vdw}). \\
+  Anyways, to obtain meaningful results one has to properly set the simulation parameters.
+
+  \subsection{Simulation ensmble}
+    Since the coexistence zone is avoided both NVT and NPT ensembles will in principle work, producing a unique value of respectively P,V vor every input value of respectively VT, PT. Anyways the NVT ensembles has some advantages.
+    When fixing the volume of the system this has no error and won't fluctuate during the simultaion while on the other hand fixing the pressure in the NPT ensemble will imply the usage of a barostat that acts rescaling the volume of the system; thus both volume and pressure will fluctuate around the equilibrium value.% Also, as we will see later, LAMMPS uses Nosè-Hoover thermo and barostats which converge pretty slowly to the fixed values of T and P.
+
+  \subsection{Size of the system and initial positions}
+    When choosing the size of the simulation system one has to find a compromise between accuracy and computational cost. Looking at the literature for this kind of simulations $N \sim 10^3$ particles with periodic boundary conditions seems a good compromise \cite{rif:article1}. For this specific case the initial configuration is an $11 \times 11 \times 11$ cubic lattice of particles with spacing $l^* = v^{*\frac[f]{1}{3}}$ where $v^*$ is the volume per particle set in the simulation. Also, looking at the experimental values of $b^*$, one can consider 1.4 as an a-priori minimum value for $v^*$.
+    %\todo[inline]{Add min value for v*}
+
+  \subsection{Timestep}
+    Since in this system there are no internal degrees of freedom (the particles are spheres interacting via LJ potential) a balanced choice for a timestep is around $dt = 10 \si{\femto\second}$ which means, if one considers Argon LJ parameters $dt^* \approx 0.0046$. Computing $dt^*$ using other substances yields a value between 0.004 and 0.005. In the following $dt^* = 0.004$ will be used.
+
+  \subsection{Thermostat typical time and sampling rate}
+    When using Nosè-Hoover thermostat one has to set the desired temperature $T_{imp}$ and the temperature damping time $\tau_T$. Since, as will be shown, the thermodynamic properties of the system oscillate with a period proportional to $\tau_T$, it is important to choose $\tau_T$ and the sampling frequency of thermodynamic properties together in order to avoid a biased results. \\
+    In the LAMMPS manual it is suggested to use $\tau_T \sim 100 dt$ \cite{rif:lammps} so one can try some values around it and see what happens. \\
+    In fig \ref{fig:T_behavior} one can see the typical behavior of the temperature (other thermodynamical properties are very similar).
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{T_oscillates.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{T_spectrum.pgf}}
+      \caption{Trend of the temperature as the simulation proceeds (sampling every 10 timesteps) and its frequency spectrum. The peak corresponds to a period of 2238 timesteps. This simulation is run at $v^* = 5.8$, $T^{*} = 1.7$, $\tau_T = 500dt$.}
+      \label{fig:T_behavior}
+    \end{figure}
+
+    A quite remarkable fact is that the period of the oscillation $\tau_{osc}$ does not depend either on $v^{*}$ or $T^{*}$, but only on $\tau_T$. If we plot $\tau_{osc}$ and the the rms amplitude of the oscillation of the temperature $\delta_T$ as $\tau_T$ varies we obtain the results in fig \ref{fig:tau_T}. I.e. $\tau_{osc} \approx 4.67 \tau_T$ while the amplitude of the oscillation does not vary a lot with $\tau_T$.
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{tau_T.pgf}}
+      \caption{Behavior of $\tau_{osc}$ and $\delta_T$ as $\tau_T$ varies}
+      \label{fig:tau_T}
+    \end{figure}
+
+    In order to avoid aliasing effects the sampling rate should be at least $\frac[f]{2}{\tau_{osc}}$, but anyways, since the behavior of the properties of the system is quite noisy (peaks at higher frequency in fig \ref{fig:T_behavior}) it is better to have an even finer sampling and then make averages.
+    For this reason a reasonable sampling rate could be $\frac[f]{10}{\tau_{osc}}$.
+    Since $\tau_{osc} \propto \tau_T$, in order to have a reasonable number of snapshots of the system without running the simulation for too many timesteps, it is better to choose a rather small value of $\tau_T$. Henceforth  $\tau_T = 200 dt$ and consequently the system will be sampled every 100 timesteps ($\frac{1}{10}\tau_{osc} = 93.4 dt$).
+
+  \subsection{Block averaging and lenght of the simulation}
+    The aim of each simulation is to obtain a triplet of values $(T^*,v^*,P^*)$ with associated errors (apart for the volume that is fixed and hence has no errors). But since snapshots are correlated with each other one cannot do a simple average of all of them. Instead one should do \emph{block averages}.
+    This means that if the sampled data are a set of $N$ values of a given property $\{f_i\}_{i=1}^N$ one creates a second dataset $\{f_j^{(M)}\}_{j=1}^{N^{(M)}}$
+    by grouping together $M$ consecutive datapoints such as:
+
+    \begin{gather}
+      f_j^{(M)} = \frac{1}{M} \sum_{i=Mj}^{M(j+1) - 1} f_i, \quad N^{(M)} = \frac{N}{M}, \quad
+      \sigma({\overbar{f^{(M)}}}) = \sqrt{\frac{\text{var}(\{f_j^{(M)}\}_{j=1}^{N^{(M)}})}{N^{(M)}}}
+    \end{gather}
+
+    Then by monitoring how the standard deviation of the mean $\sigma({\overbar{f^{(M)}}})$ behaves as a function of $M$ one can choose the proper value of $M$ (fig \ref{fig:block1}).
+    %In order to do that one can run a quite long simulation ($10^6$ timesteps) and try values of $M$ that are powers of 2 (fig \ref{fig:block1}).
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{block_averages_M.pgf}}
+      \caption{Relative standard deviation of the mean of the temperature $\sigma_r = \frac[f]{\sigma({\overbar{T^{(M)}}})}{\sigma({\overbar{T^{(1)}}})}$ as a function of the block averaging parameter.
+      With $M \sim 10$ the average blocks are temporally spaced by $\sim \tau_{osc}$. For $M > 10^3$ the standard deviation is computed on a too small set of values so it diverges. This data are exracted from a simulation lasting $10^6$ timesteps.}
+      \label{fig:block1}
+    \end{figure}
+
+    From fig \ref{fig:block1} one can see that the standard deviation of the mean temperature tends to stabilize around $M \sim 10^2$ (notice the logarithmic scale on the x axis), meaning that the average blocks are no more significantly correlated with each other and so the variance of the mean acquires the correct meaning.\\
+    With this choice of $M$ and considering that the system is sampled every 100 timesteps, at the end of the block averaging process one has a data point every $10^4$ timesteps. So, in order to be able to compute a meaningful average and variance one needs at least 10-20 points, meaning that the simulation should proceed for at least $(1-2)\cdot10^5$ timesteps ($2\cdot10^5$ will be used).
+
+  \subsection{Equilibration of the system}
+    The starting condition for the simulation are out of the thermodynamic equilibrium, which is reached in the first part of the simulation (equilibration). This portion of data should not be used for the computation of the averages of thermodynamic properties of the system. The equilibration is already visible in fig \ref{fig:T_behavior} as the first big spike of the oscillation of the temperature, and to make this equilibration process shorter the initial velocities of the particles are sampled from a gaussian distribution such as the average kinetic energy corresponds to $k_B T_{imp}$. But for how long does it affect the data? To better see it one can plot the behavior of $T^*$ and $P^*$ with different block averaging parameters $M$ (fig \ref{fig:equilibration}).
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{equilibration1.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{equilibration2.pgf}}
+      \caption{Trend of the temperature and pressure in the first part of the simulation plotted with a different degree of block averaging.}
+      \label{fig:equilibration}
+    \end{figure}
+
+    As can be seen from fig \ref{fig:equilibration} the initial drift in temperature and pressure becomes less and less visible as $M$ grows, and actually for $M = 100$ (that is the value used for the analysis) there seems to be no trend at all. To be conservative one can anyways discard the first two datapoints, i.e. consider the first 20000 timesteps as equilibration of the system. \\
+    One could say that it is better to do some more sophisticated analysis in order to determine more precisly the end of the equilibration phase of the simulation, but actually this will make virtually no difference in the final results since after the block averaging process the datapoints are widely spaced (10000 timesteps).
+
+  \subsection{Cutoff radius for the LJ potential}
+    Henceforth, for simplicity of notation we refer to average properties by neglecting the overbar. \\
+    When computing the forces between the particles, in principle one should consider the interaction between all possible pairs of particles. But since the LJ potential is a short range interaction one can compute only the interaction between \emph{near enough} particles thus considerably speeding up the simulation. In practice the LJ potential is cut at a radius $r_c$ such as particles further from each other than $r_c$ do not interact. Then to ensure the continuity of the potential, it is rigidly shifted. If $H(x)$ is the Heaviside step function one can write the following.
+
+    \begin{gather*} \label{eq:cut}
+      U^*(r^*) = 4 \left(r^{*-12} - r^{*-12} \right), \qquad
+      U_{\text{cut}}^*(r^*) = U^*(r^*)H(r^* - r_c^*) \\
+      U_{\text{cut,shifted}}^*(r^*) = (U^*(r^*) - U^*(r_c^*))H(r^* - r_c^*)
+    \end{gather*}
+
+    But cutting the potential implies neglecting the contribution to the potential energy and the pressure of the farthest particles. This contributions are called \emph{tail corrections} and can be approximated by eq \ref{eq:tail_corr} \cite{rif:tail}, where the last step is good within 1\% if $r_c^* > 2$. Notice that shifting the potential does not affect the pressure since this depends only on derivatives of the potential; also, adding the tail correction has no computational cost, since there is an analytic form for $P_{tail}^*$. \\
+    By trying different values of $r_c^*$ at different densities one obtains the plots in fig \ref{fig:r_c}, where it is clear that adding the tail correction makes the the pressure less dependent on the choice of $r_c^*$. In particular one can say that a reasonable value for $r_c^*$ is 3.0
+
+    % But how does this cutting and shifting of the potential affects the thermodynamic properties of the system?
+    % From fig \ref{fig:r_c} one sees that the value of $r_c$ affects the average pressure of the simulation quite a lot, while shifting the potential mainly affects the fluctuations of the pressure. Also, the dependence on $r_c$ is more relevant for smaller values of $v^*$, i.e. at higher density.
+    % This makes sense because at higher densities there are more particles just outside $r_c$ and so their contribution to the forces is more relevant. This is the effect of the \emph{tail correction}, i.e. cutting the potential neglects a potential energy per particle $U_{tail}^*$ and a an additional pressure term $P_{tail}^*$ that can be approximated by eq \ref{eq:tail_corr} \cite{rif:tail} where the last approximation is good within 1\% if $r_c^* > 2$.
+
+    \begin{gather} \label{eq:tail_corr}
+      U_{tail}^* = 8\pi \frac{1}{v^*} \left(\frac{1}{9r_c^{*9}} - \frac{1}{r_c^{*3}} \right)
+      \approx  - \frac{8\pi}{3} \frac{1}{v^*} \frac{1}{r_c^{*3}}
+      \\
+      P_{tail}^* = 16\pi \frac{1}{v^{*2}} \left(\frac{2}{9r_c^{*9}} - \frac{1}{r_c^{*3}} \right)
+      \approx - \frac{16\pi}{3} \frac{1}{v^{*2}} \frac{1}{r_c^{*3}}
+    \end{gather}
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{Pvsr_c.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{sigPvsr_c.pgf}}
+      \caption{Behavior of the relative average pressure and its standard deviation as a function of $r_c$. The first with and without the tail correction, the second with and without the shift of the potential.}
+      \label{fig:r_c}
+    \end{figure}
+
+
+  \subsection{Neighbor list}
+    The aim of cutting the LJ potential is to reduce the computational complexity of the simulation from $O(N^2)$ to $O(N)$. This is achieved via a \emph{neighbor list} that for each particles contains the particles that are nearer than $r_c + \delta$ where $\delta$ is called \emph{skin} and accounts for the fact that particles move, allowing the list to be updated every $t_{update} > dt$.
+    From fig \ref{fig:delta} one can see that the pressure oscillates less at $\delta^* = 0.3$, which is also the LAMMPS default value, while the average value of the pressure does not depend considerably on $\delta$ nor on $t_{update}$. Considering this to speed up the computations one can choose $t_{update} = 20 dt$. \\
+    For completeness, LAMMPS provides other methods of updating the neighbor list, but for this kind of system they do not give any computational advantage.
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{sigPvsdelta.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{computing_time.pgf}}
+      \caption{Behavior of the standard deviation of the pressure and the computing time of the simulation as a function of the skin $\delta^*$ and at different $t_{update}$. 'every 10' means $t_{update} = 10dt$.}
+      \label{fig:delta}
+    \end{figure}
+
+
+  \subsection{List of simulation parameters}
+
+    \begin{table}[H]
+      \centering
+      \begin{tabular}{lcc}
+        \toprule
+        parameter & symbol & set value \\
+        \midrule
+        ensemble & & NVT \\
+        number of particles & $N$ & 1331 \\
+        timestep & $dt^*$ & 0.004 \\
+        thermostat typical time & $\tau_T$ & $200 dt$ \\
+        sampling time & & $100 dt$ \\
+        block averaging parameter & $M$ & 100 \\
+        lenght of the simulation & & $200000 dt$ \\
+        equilibration & & first 20000 timesteps \\
+        datapoints for computing the final average & & 18 \\
+        approximated form for the LJ potential & & $U_{\text{cut,shifted}}^*$ \\
+        cutoff radius & $r_c^*$ & 3.0 \\
+        neighbor list skin & $\delta^*$ & 0.3 \\
+        neighbor list updating time & $t_{update}$ & $20 dt$ \\
+        \bottomrule
+      \end{tabular}
+      \caption{List of simulation parameters}
+      \label{tab:parlist}
+    \end{table}
+
+
+
+\section{Estimation of the VdW parameters}
+  \subsection{Supercritical isotherms}
+    For supercritical isotherms it is possible to acquire the whole curve, but in order to optimize the efficiency of the simulations it is better to choose a proper spacing of the volume (fig \ref{fig:v_spacing}). For this reason chosing to uniformly space $\frac[f]{1}{v^*}$ seems the best choice. \\
+    On the other hand since at a fixed $v^*$ $P^*$ has a linear dependence on $T^*$, a uniform spacing of $T^*$ seems reasonable.
+
+
+    % \begin{figure}[H]
+    %   \centering
+    %   \resizebox{0.33\textwidth}{!}{\import{img/}{spacing_v1.pgf}} \hspace{-0.3cm}
+    %   \resizebox{0.33\textwidth}{!}{\import{img/}{spacing_l1.pgf}} \hspace{-0.3cm}
+    %   \resizebox{0.33\textwidth}{!}{\import{img/}{spacing_v-1.pgf}}
+    %   \caption{Points sampled from the theoretical VdW curve using Argon parameters}
+    %   \label{fig:v_spacing}
+    % \end{figure}
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.33\textwidth}{!}{\import{img/}{spacing_log_v1.pgf}} \hspace{-0.3cm}
+      \resizebox{0.33\textwidth}{!}{\import{img/}{spacing_log_l1.pgf}} \hspace{-0.3cm}
+      \resizebox{0.33\textwidth}{!}{\import{img/}{spacing_log_v-1.pgf}}
+      \caption{Points sampled from the theoretical VdW curve using Argon parameters}
+      \label{fig:v_spacing}
+    \end{figure}
+
+    \subsection{Subcritical isotherms}
+      Since the VdW parameters depend on temperature it is quite tricky to know a priori if an isotherm is actually below the critical temperature. Even trickier is to avoid the phase coexhistence zone. Thus this has to be done a posteriori, i.e simulate some points to roughly avoid the coexhistence zone, then remove data where $\frac{\partial P^*}{\partial v^*} > 0$. \\
+      For this isotherms points are chosen by uniformly spacing the volume separately in the liquid and gas phase.
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{supercritical_isotherm_fit.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{supercritical_isotherm_residuals.pgf}}
+      \caption{Fit and residuals of some of the supercritical isotherms.}
+      \label{fig:fit_isotherms}
+    \end{figure}
+
+    % \begin{figure}[H]
+    %
+    %   \caption{Results of the fit on individual supercritical isotherms.}
+    %   \label{fig:isotherm_params}
+    %
+    %   \begin{floatrow}
+    %     \hspace{0.5cm}
+    %     \capbtabbox{%
+    %       \begin{tabular}{cccc}
+    %         \toprule
+    %         $T^*$ & $a^*$ & $b^*$ & $\chi^2/$Ndof \\
+    %         \midrule
+    %         $1.5$ & $3.81 \pm 0.01$ & $0.886 \pm 0.002$ & $20$ \\
+    %         $2.0$ & $3.40 \pm 0.02$ & $0.845 \pm 0.003$ & $8$ \\
+    %         $2.5$ & $2.97 \pm 0.02$ & $0.808 \pm 0.003$ & $8$ \\
+    %         $3.0$ & $2.43 \pm 0.03$ & $0.771 \pm 0.003$ & $25$ \\
+    %         $3.5$ & $2.09 \pm 0.03$ & $0.752 \pm 0.003$ & $18$ \\
+    %         $4.0$ & $1.58 \pm 0.04$ & $0.722 \pm 0.003$ & $31$ \\
+    %         $4.5$ & $1.39 \pm 0.04$ & $0.717 \pm 0.004$ & $16$ \\
+    %         \bottomrule
+    %       \end{tabular}
+    %     }{}
+    %     \hspace{-9.5cm}
+    %     \ffigbox{%
+    %       \resizebox{0.45\textwidth}{!}{\import{img/}{isotherm_ab.pgf}}%
+    %     }{}
+    %   \end{floatrow}
+    % \end{figure}
+
+
+
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.5\textwidth}{!}{\import{img/}{subcritical_isotherm_fit.pgf}} \hspace{-0.5cm}
+      \resizebox{0.5\textwidth}{!}{\import{img/}{subcritical_isotherm_residuals.pgf}}
+      \caption{Fit and residuals of the subcritical isotherms. The coexhistence zone has not been completely avoided, as there are points in the liquid phase with a lower pressure than the ones in the gas phase. These points have not been discarded since it would have meant to discard almost all the liquid phase.}
+      \label{fig:subcritical_fit_isotherms}
+    \end{figure}
+
+
+  \subsection{Results}
+    By fitting the isotherms with the VdW formula (eq \ref{eq:vdw}) one obtains the results in figs \ref{fig:fit_isotherms}, \ref{fig:subcritical_fit_isotherms} and tab \ref{tab:isotherm_params}.
+    % As can be seen from fig \ref{fig:isotherm_params} choosing to apply or not the tail correction does not affect the value of $b^*$ while modifying $a^*$ and hence the critical temperature. The fit with the tail correction is more preferrable being theoretically more acurate, but actually the reduced $\chi^2$ does not improve very much. Anyways this is not surprising: the tail correction is a term $P_{tail} \propto \frac[f]{1}{v^{*2}}$ and the VdW equation of state can be recasted as $P^* = \frac{T^*}{v^* - b^*} - \frac{a^*}{v^{*2}}$. It is then clear that the effect of the tail correction is simply a rigid shift of $a^*$.\\
+    The fact that there is a clear trend in the residuals, that the values of $a^*$, $b^*$ and $T_c^*$ are a decreasing function of temperature and the  high values of the reduced $\chi^2$ suggest that, even thouhg the VdW model is quite good at describing the equation of state of the system, there are non negligible higher order terms. \\
+
+
+
+    % \begin{table}[H]
+    %   \centering
+    %   \begin{tabular}{cccccc}
+    %     \toprule
+    %     $T^*$ & $a^*$ & $b^*$ & $T_c^*$ & $\chi^2/$Ndof \\
+    %     \midrule
+    %     $0.8$ & $3.30 \pm 0.02$ & $0.767 \pm 0.002$ & $1.277 \pm 0.004$ & $28$ \\
+    %     $0.9$ & $3.29 \pm 0.02$ & $0.773 \pm 0.002$ & $1.262 \pm 0.004$ & $37$ \\
+    %     $1.0$ & $3.24 \pm 0.02$ & $0.773 \pm 0.002$ & $1.242 \pm 0.004$ & $45$ \\
+    %     $1.1$ & $3.23 \pm 0.01$ & $0.778 \pm 0.002$ & $1.232 \pm 0.003$ & $54$ \\
+    %     $1.2$ & $3.39 \pm 0.01$ & $0.802 \pm 0.002$ & $1.254 \pm 0.003$ & $94$ \\
+    %     \midrule
+    %     $1.5$ & $3.81 \pm 0.01$ & $0.886 \pm 0.002$ & $1.275 \pm 0.002$ & $20$ \\
+    %     $2.0$ & $3.40 \pm 0.02$ & $0.845 \pm 0.003$ & $1.194 \pm 0.004$ & $8$ \\
+    %     $2.5$ & $2.97 \pm 0.02$ & $0.808 \pm 0.003$ & $1.088 \pm 0.005$ & $8$ \\
+    %     $3.0$ & $2.43 \pm 0.03$ & $0.771 \pm 0.003$ & $0.934 \pm 0.007$ & $25$ \\
+    %     $3.5$ & $2.09 \pm 0.03$ & $0.752 \pm 0.003$ & $0.82 \pm 0.01$ & $18$ \\
+    %     $4.0$ & $1.58 \pm 0.04$ & $0.722 \pm 0.003$ & $0.65 \pm 0.01$ & $31$ \\
+    %     $4.5$ & $1.39 \pm 0.04$ & $0.717 \pm 0.004$ & $0.57 \pm 0.02$ & $16$ \\
+    %     \bottomrule
+    %   \end{tabular}
+    %   \caption{Fit results for the super and sub critical isotherms. Subcritical fits have a quite high value of the reduced $\chi^2$; fitting separately the liquid and gas phase improves it a lot but gives non physical results ($b^* < 0$).}
+    %   \label{tab:isotherm_params}
+    % \end{table}
+    %
+    % \begin{figure}[H]
+    %   \centering
+    %   \resizebox{0.5\textwidth}{!}{\import{img/}{all_isotherm_ab.pgf}}
+    %   \caption{Behavior of the VdW parameters and the critical temperature $T_c^* = \frac[f]{8a^*}{27b^*}$ as a function of the temperature of the isotherm. $a^*$ has been rescaled to fit in the graph.}
+    %   \label{fig:isotherm_params}
+    % \end{figure}
+
+
+
+    % \begin{figure}
+    %
+    %   \caption{Results of the fit on individual isotherms. For the subcritical isotherms the reduced $\chi^2$ improves a lot fitting separately the liquid and gas phase, but this way one obtains unphysical results ($b^* < 0$). The results in the table are the ones with the tail correction.}
+    %   \label{fig:isotherm_params}
+    %
+    %   \begin{floatrow}
+    %     \hspace{0cm}
+    %     \capbtabbox{%
+    %       \begin{tabular}{ccccc}
+    %         \toprule
+    %         $T^*$ & $a^*$ & $b^*$ & $T_c^*$ & $\chi^2/$Ndof \\
+    %         \midrule
+    %         $0.8$ & $3.938 \pm 0.005$ & $0.7680 \pm 0.0004$ & $1.5192 \pm 0.0010$ & $542$ \\
+    %         $0.9$ & $3.863 \pm 0.003$ & $0.7670 \pm 0.0003$ & $1.4925 \pm 0.0007$ & $658$ \\
+    %         $1.0$ & $3.863 \pm 0.004$ & $0.7733 \pm 0.0004$ & $1.4801 \pm 0.0008$ & $811$ \\
+    %         $1.1$ & $3.854 \pm 0.003$ & $0.7776 \pm 0.0004$ & $1.4685 \pm 0.0006$ & $968$ \\
+    %         $1.2$ & $3.932 \pm 0.004$ & $0.7932 \pm 0.0005$ & $1.4688 \pm 0.0007$ & $1539$ \\
+    %         \midrule
+    %         $1.5$ & $4.435 \pm 0.003$ & $0.8863 \pm 0.0006$ & $1.4826 \pm 0.0005$ & $366$ \\
+    %         $2.0$ & $4.025 \pm 0.005$ & $0.8449 \pm 0.0006$ & $1.4115 \pm 0.0008$ & $150$ \\
+    %         $2.5$ & $3.589 \pm 0.005$ & $0.8085 \pm 0.0006$ & $1.315 \pm 0.001$ & $140$ \\
+    %         $3.0$ & $3.051 \pm 0.006$ & $0.7710 \pm 0.0006$ & $1.173 \pm 0.002$ & $446$ \\
+    %         $3.5$ & $2.707 \pm 0.008$ & $0.7521 \pm 0.0007$ & $1.067 \pm 0.002$ & $319$ \\
+    %         $4.0$ & $2.198 \pm 0.009$ & $0.7224 \pm 0.0008$ & $0.901 \pm 0.003$ & $558$ \\
+    %         $4.5$ & $2.01 \pm 0.01$ & $0.7173 \pm 0.0008$ & $0.829 \pm 0.003$ & $296$ \\
+    %         \bottomrule
+    %       \end{tabular}
+    %     }{}
+    %     \hspace{-8cm}
+    %     \ffigbox{%
+    %       \resizebox{0.47\textwidth}{!}{\import{img/}{all_isotherm_ab.pgf}}%
+    %     }{}
+    %   \end{floatrow}
+    % \end{figure}
+
+    \begin{table}
+      \centering
+      \begin{tabular}{ccccc}
+          \toprule
+          $T^*$ & $a^*$ & $b^*$ & $T_c^*$ & $\chi^2/$Ndof \\
+          \midrule
+          $0.8$ & $3.938 \pm 0.005$ & $0.7680 \pm 0.0004$ & $1.5192 \pm 0.0010$ & $542$ \\
+          $0.9$ & $3.863 \pm 0.003$ & $0.7670 \pm 0.0003$ & $1.4925 \pm 0.0007$ & $658$ \\
+          $1.0$ & $3.863 \pm 0.004$ & $0.7733 \pm 0.0004$ & $1.4801 \pm 0.0008$ & $811$ \\
+          $1.1$ & $3.854 \pm 0.003$ & $0.7776 \pm 0.0004$ & $1.4685 \pm 0.0006$ & $968$ \\
+          $1.2$ & $3.932 \pm 0.004$ & $0.7932 \pm 0.0005$ & $1.4688 \pm 0.0007$ & $1539$ \\
+          \midrule
+          $1.5$ & $4.435 \pm 0.003$ & $0.8863 \pm 0.0006$ & $1.4826 \pm 0.0005$ & $366$ \\
+          $2.0$ & $4.025 \pm 0.005$ & $0.8449 \pm 0.0006$ & $1.4115 \pm 0.0008$ & $150$ \\
+          $2.5$ & $3.589 \pm 0.005$ & $0.8085 \pm 0.0006$ & $1.315 \pm 0.001$ & $140$ \\
+          $3.0$ & $3.051 \pm 0.006$ & $0.7710 \pm 0.0006$ & $1.173 \pm 0.002$ & $446$ \\
+          $3.5$ & $2.707 \pm 0.008$ & $0.7521 \pm 0.0007$ & $1.067 \pm 0.002$ & $319$ \\
+          $4.0$ & $2.198 \pm 0.009$ & $0.7224 \pm 0.0008$ & $0.901 \pm 0.003$ & $558$ \\
+          $4.5$ & $2.01 \pm 0.01$ & $0.7173 \pm 0.0008$ & $0.829 \pm 0.003$ & $296$ \\
+          \bottomrule
+        \end{tabular}
+      \caption{Results of the fit on individual isotherms. For the subcritical isotherms the reduced $\chi^2$ improves a lot fitting separately the liquid and gas phase, but this way one obtains unphysical results ($b^* < 0$).}
+      \label{tab:isotherm_params}
+    \end{table}
+
+
+
+    % \begin{figure}[H]
+    %   \centering
+    %   \resizebox{0.5\textwidth}{!}{\import{img/}{all_isotherm_fit_chi2.pgf}}
+    %   \caption{Behavior of the reduced $\chi^2$ as a function of temperature, with and without tail correction.}
+    %   \label{fig:isotherms_chi2}
+    % \end{figure}
+
+    Another possibility instead of fitting each isotherm, is to fit all data points with a surface. If one neglects the error on temperature (which is actually smaller than the error on pressure), one gets the results in fig \ref{fig:all_data_fit}, where the surface has VdW parameters
+
+    \begin{gather*}
+      a^* = 3.592 \pm 0.001, \qquad b^* = 0.7733 \pm 0.0001, \qquad T_c^* = 1.3764 \pm 0.0003, \qquad \chi^2/\text{Ndof} = 3223
+    \end{gather*}
+
+    The very high value of the reduced $\chi^2$ is not a surprise given the behavior of the VdW parameters obtained by fitting individual isotherms.
+
+
+    \begin{figure}[H]
+      \centering
+      \resizebox{0.7\textwidth}{!}{\import{img/}{all_data_fit_log.pgf}}
+      \caption{All valid data points from the simulations and the surface fitting them. Since the plot has a logarithmic scale on each axis, points with $P^* < 0$ are not shown.}
+      \label{fig:all_data_fit}
+    \end{figure}
+
+
+\section{Conclusion}
+  By studying the effect of the tuning of the simulation parameters it has been posssible to choose reasonable values of them when running simulations.
+  The simulated LJ system roughly follows the VdW model but there are other effects at play which imply a dependence of the VdW parameters on the temperature. For this reason the average value of those parameters obtained by fitting all the data is meaningful only in the range of temperature considered in these simulations.\\
+  This is in fact a good result because it means that MD simulations (like real systems) go beyond the VdW approximation.
+
+
+
+
+
+
+\begin{thebibliography}{100}
+  \bibitem{rif:Maxwell} J. Lekner \emph{Parametric solution of the Van der Waals liquid-vapor coexistence curve} Victoria University, Wellington, New Zeland, 3 April 1981. \url{https://www.researchgate.net/publication/243489706_Parametric_solution_of_the_van_der_Waals_liquid-vapor_coexistence_curve}
+  \bibitem{rif:exp_par1} \emph{Van der Waals constants for real Gases} \url{http://www2.ucdsb.on.ca/tiss/stretton/database/van_der_waals_constants.html}
+  \bibitem{rif:exp_par2} Wikipedia \emph{Critical Point (thermodynamics)} \url{https://en.wikipedia.org/wiki/Critical_point_(thermodynamics)}
+  \bibitem{rif:lammps} LAMMPS \url{https://lammps.sandia.gov}
+  \bibitem{rif:article1} Y. Kataoka \& Y. Yamada \emph{Van der Waals type equation of state for Lennard-Jones fluid and the fluctuation of the potential energy by molecular dynamics simulations}, 17 August 2011 \url{http://dx.doi.org/10.1080/08927022.2011.551881}
+  \bibitem{rif:tail} \emph{Simulations of bulk phases} \url{https://sites.engineering.ucsb.edu/~shell/che210d/Simulations_of_bulk_phases.pdf}
+\end{thebibliography}
+
+
+\end{document}

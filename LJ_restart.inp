@@ -1,0 +1,35 @@
+#---------------------------------------------------------------------
+#  LJ_restart.inp
+#  
+#  run a simulation in NpT ensemble
+#  restart from a previous simulation
+#
+#  in comments: ts = timestep
+#---------------------------------------------------------------------
+
+read_restart LJ.end1.restart
+
+# force field definition
+pair_style		lj/cut 2.5	 # LJ potential cut
+pair_modify             shift yes        # shifted potential
+pair_coeff		1 1 1.0 1.0 	 # for atom type .. and ..: epsilon, sigma
+
+
+#  check of neighbor list
+neighbor	0.3 bin		# skin length and algorithm used [bin]
+neigh_modify	every 20 delay 0 check no  # build neighbor list every ... ts
+
+timestep        	0.004
+
+
+fix 1 all  npt  temp 0.8 0.8 2 iso 1. 1. 5          # NPT ensemble  T_i T_f tau_T   p_i p_f tau_p
+
+dump dumpeq all dcd 1000 LJ.dcd                # save coordinates in *.dcd file every ... ts
+
+thermo	1000                                   # thermodynamic output every ... ts
+thermo_style custom step temp press pe ke etotal density  # list of quantities in thermodynamic output
+
+run 50000                                      # number of ts in equilibration run
+
+write_restart LJ.end2.restart                  # write a restart file for a next simulation
+

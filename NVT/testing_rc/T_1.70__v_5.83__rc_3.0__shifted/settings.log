@@ -1,0 +1,30 @@
+boundary p p p
+units lj
+atom_style atomic
+read_data NVT/testing_rc/T_1.70__v_5.83__rc_3.000000__shifted/lattice.data
+  orthogonal box = (-10 -10 -10) to (10 10 10)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  1331 atoms
+  read_data CPU = 0.00757123 secs
+
+mass 1 1.000000
+pair_style lj/cut 3.000000
+pair_modify shift yes
+pair_coeff 1 1 1.0 1.0
+
+velocity all create 1.700000 17562 mom yes rot yes dist gaussian
+
+neighbor 0.300000 bin
+neigh_modify every 20 delay 0 check no
+
+timestep 0.004000
+
+fix 1 all nvt temp 1.700000 1.700000 0.800000
+
+dump dumpeq all dcd 1000 NVT/testing_rc/T_1.70__v_5.83__rc_3.000000__shifted/trajectory.dcd
+
+thermo 100
+thermo_style custom step temp press etotal pe
+
+log NVT/testing_rc/T_1.70__v_5.83__rc_3.000000__shifted/results.log

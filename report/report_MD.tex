@@ -18,7 +18,7 @@
   The aim of this report is to use Molecular Dynamics (MD) simulations of a fluid subject to Lennard-Jones (LJ) potential to derive its equation of state. Then, by fitting it with the Van der Waals (VdW) equation of state an estimate of the VdW parameters will be obtained.
 
   \subsection{Lennard-Jones and Van der Waals model}
-    A LJ fluid is a set of particle subject only to the pair-wise interaction potential in eq \ref{eq:lj} where $r$ is the distance between the centers of the two particles considered. The LJ parameters $\sigma$ and $\epsilon$, together with the mass of the particles $m$, provide typical scales of the system and are thus used to work in reduced units (here denoted with a *). For example if $t$ is the unit of time, the corresponding reduced unit would be $t^* = t \sqrt{\frac[f]{\epsilon}{m\sigma^2}}$.
+    A LJ fluid is a set of particles subject only to the pair-wise interaction potential in eq \ref{eq:lj} where $r$ is the distance between the centers of the two particles considered. The LJ parameters $\sigma$ and $\epsilon$, together with the mass of the particles $m$, provide typical scales of the system and are thus used to work in reduced units (here denoted with a *). For example if $t$ is the unit of time, the corresponding reduced unit would be $t^* = t \sqrt{\frac[f]{\epsilon}{m\sigma^2}}$.
 
     \begin{equation} \label{eq:lj}
       U(r) = 4\epsilon\left(\left(\frac{\sigma}{r} \right)^{12} - \left(\frac{\sigma}{r} \right)^6 \right)
@@ -107,7 +107,7 @@
   Anyways, to obtain meaningful results one has to properly set the simulation parameters.
 
   \subsection{Simulation ensmble}
-    Since the coexistence zone is avoided both NVT and NPT ensembles will in principle work, producing a unique value of respectively P,V vor every input value of respectively VT, PT. Anyways the NVT ensembles has some advantages.
+    Since the coexistence zone is avoided both NVT and NPT ensembles will in principle work, producing a unique value of respectively P,V for every input value of respectively VT, PT. Anyways the NVT ensemble will be used since it has some advantages.
     When fixing the volume of the system this has no error and won't fluctuate during the simultaion while on the other hand fixing the pressure in the NPT ensemble will imply the usage of a barostat that acts rescaling the volume of the system; thus both volume and pressure will fluctuate around the equilibrium value.% Also, as we will see later, LAMMPS uses Nosè-Hoover thermo and barostats which converge pretty slowly to the fixed values of T and P.
 
   \subsection{Size of the system and initial positions}
@@ -168,7 +168,7 @@
     With this choice of $M$ and considering that the system is sampled every 100 timesteps, at the end of the block averaging process one has a data point every $10^4$ timesteps. So, in order to be able to compute a meaningful average and variance one needs at least 10-20 points, meaning that the simulation should proceed for at least $(1-2)\cdot10^5$ timesteps ($2\cdot10^5$ will be used).
 
   \subsection{Equilibration of the system}
-    The starting condition for the simulation are out of the thermodynamic equilibrium, which is reached in the first part of the simulation (equilibration). This portion of data should not be used for the computation of the averages of thermodynamic properties of the system. The equilibration is already visible in fig \ref{fig:T_behavior} as the first big spike of the oscillation of the temperature, and to make this equilibration process shorter the initial velocities of the particles are sampled from a gaussian distribution such as the average kinetic energy corresponds to $k_B T_{imp}$. But for how long does it affect the data? To better see it one can plot the behavior of $T^*$ and $P^*$ with different block averaging parameters $M$ (fig \ref{fig:equilibration}).
+    The starting conditions for the simulation are out of the thermodynamic equilibrium, which is reached in the first part of the simulation (equilibration). This portion of data should not be used for the computation of the averages of thermodynamic properties of the system. The equilibration is already visible in fig \ref{fig:T_behavior} as the first big spike of the oscillation of the temperature, and to make this equilibration process shorter the initial velocities of the particles are sampled from a gaussian distribution such as the average kinetic energy corresponds to $k_B T_{imp}$. But for how long does it affect the data? To better see it one can plot the behavior of $T^*$ and $P^*$ with different block averaging parameters $M$ (fig \ref{fig:equilibration}).
 
     \begin{figure}[H]
       \centering

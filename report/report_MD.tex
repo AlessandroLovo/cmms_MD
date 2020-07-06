@@ -216,7 +216,7 @@
 
 
   \subsection{Neighbor list}
-    The aim of cutting the LJ potential is to reduce the computational complexity of the simulation from $O(N^2)$ to $O(N)$. This is achieved via a \emph{neighbor list} that for each particles contains the particles that are nearer than $r_c + \delta$ where $\delta$ is called \emph{skin} and accounts for the fact that particles move, allowing the list to be updated every $t_{update} > dt$.
+    The aim of cutting the LJ potential is to reduce the computational complexity of the simulation from $O(N^2)$ to $O(N)$. This is achieved via a \emph{neighbor list} that for each particle contains the particles that are nearer than $r_c + \delta$ where $\delta$ is called \emph{skin} and accounts for the fact that particles move, allowing the list to be updated every $t_{update} > dt$.
     From fig \ref{fig:delta} one can see that the pressure oscillates less at $\delta^* = 0.3$, which is also the LAMMPS default value, while the average value of the pressure does not depend considerably on $\delta$ nor on $t_{update}$. Considering this to speed up the computations one can choose $t_{update} = 20 dt$. \\
     For completeness, LAMMPS provides other methods of updating the neighbor list, but for this kind of system they do not give any computational advantage.
 
@@ -261,7 +261,7 @@
 \section{Estimation of the VdW parameters}
   \subsection{Supercritical isotherms}
     For supercritical isotherms it is possible to acquire the whole curve, but in order to optimize the efficiency of the simulations it is better to choose a proper spacing of the volume (fig \ref{fig:v_spacing}). For this reason chosing to uniformly space $\frac[f]{1}{v^*}$ seems the best choice. \\
-    On the other hand since at a fixed $v^*$ $P^*$ has a linear dependence on $T^*$, a uniform spacing of $T^*$ seems reasonable.
+    On the other hand since at a fixed $v^*$, $P^*$ has a linear dependence on $T^*$, a uniform spacing of $T^*$ seems reasonable.
 
 
     % \begin{figure}[H]
@@ -283,8 +283,8 @@
     \end{figure}
 
     \subsection{Subcritical isotherms}
-      Since the VdW parameters depend on temperature it is quite tricky to know a priori if an isotherm is actually below the critical temperature. Even trickier is to avoid the phase coexhistence zone. Thus this has to be done a posteriori, i.e simulate some points to roughly avoid the coexhistence zone, then remove data where $\frac{\partial P^*}{\partial v^*} > 0$. \\
-      For this isotherms points are chosen by uniformly spacing the volume separately in the liquid and gas phase.
+      Since the VdW parameters depend on temperature (see tab \ref{tab:isotherm_params}) it is quite tricky to know a priori if an isotherm is actually below the critical temperature. Even trickier is to avoid the phase coexhistence zone. Thus this has to be done a posteriori, i.e simulate some points to roughly avoid the coexhistence zone, then remove data where $\frac{\partial P^*}{\partial v^*} > 0$. \\
+      For these isotherms points are chosen by uniformly spacing the volume separately in the liquid and gas phase.
 
     \begin{figure}[H]
       \centering
@@ -338,7 +338,7 @@
   \subsection{Results}
     By fitting the isotherms with the VdW formula (eq \ref{eq:vdw}) one obtains the results in figs \ref{fig:fit_isotherms}, \ref{fig:subcritical_fit_isotherms} and tab \ref{tab:isotherm_params}.
     % As can be seen from fig \ref{fig:isotherm_params} choosing to apply or not the tail correction does not affect the value of $b^*$ while modifying $a^*$ and hence the critical temperature. The fit with the tail correction is more preferrable being theoretically more acurate, but actually the reduced $\chi^2$ does not improve very much. Anyways this is not surprising: the tail correction is a term $P_{tail} \propto \frac[f]{1}{v^{*2}}$ and the VdW equation of state can be recasted as $P^* = \frac{T^*}{v^* - b^*} - \frac{a^*}{v^{*2}}$. It is then clear that the effect of the tail correction is simply a rigid shift of $a^*$.\\
-    The fact that there is a clear trend in the residuals, that the values of $a^*$, $b^*$ and $T_c^*$ are a decreasing function of temperature and the  high values of the reduced $\chi^2$ suggest that, even thouhg the VdW model is quite good at describing the equation of state of the system, there are non negligible higher order terms. \\
+    The fact that there is a clear trend in the residuals, that the values of $a^*$, $b^*$ and $T_c^*$ are a decreasing function of temperature and the  high values of the reduced $\chi^2$ suggest that, even thouhg the VdW model is quite good at describing the equation of state of the system, there are non negligible higher order terms. 
 
 
 
